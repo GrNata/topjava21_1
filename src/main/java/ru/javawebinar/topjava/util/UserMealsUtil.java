@@ -57,20 +57,22 @@ public class UserMealsUtil {
 
     public static List<UserMealWithExcess> filteredByStreams(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         // TODO Implement by streams
-//        Map<LocalDate, Integer> mapStream = meals.stream().collect(Collectors.toMap(s -> s.getDate(), n -> n.getCalories()));
-//
-//        for (Map.Entry<LocalDate, Integer> m : mapStream.entrySet()) System.out.println(m);
+        Map<LocalDate, Integer> mapStream = meals.stream().
+                collect(
+                        Collectors.groupingBy(UserMeal::getDate, Collectors.summingInt(UserMeal::getCalories)));
 
-        Map<LocalDate, Integer> map = new TreeMap<>();
-        for (UserMeal item : meals) {
-            if (map.get(item.getDate()) == null) {
-                map.put(item.getDate(), item.getCalories());
-            } else {
-                int count = map.get(item.getDate());
-                map.put(item.getDate(), (count + item.getCalories()));
-            }
+        return meals.stream()
+                .filter(meal -> TimeUtil.isBetweenInclusive(meal.getTime(), startTime, endTime))
+                .map(meal -> createTo(meal, mapStream.get(meal.getDate()), caloriesPerDay))
+                .collect(Collectors.toList());
+    }
+
+    private static UserMealWithExcess createTo(UserMeal meal, int calories, int caloriesPerDay) {
+        if (calories > caloriesPerDay) {
+            return new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), false);
+        } else {
+            return new UserMealWithExcess(meal.getDateTime(), meal.getDescription(), meal.getCalories(), true);
         }
 
-        return null;
     }
 }
