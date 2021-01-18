@@ -84,6 +84,9 @@ public class UserServiceTest {
     @Test
     public void getAll() throws Exception {
         List<User> all = service.getAll();
+        System.out.println("all: "+all);
+        System.out.println("admin: "+admin);
+        System.out.println("user: "+user);
         USER_MATCHER.assertMatch(all, admin, user);
     }
 }
